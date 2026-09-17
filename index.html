@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Temperaturas Educativo</title>
+    <style>
+        /* =========================================
+           SECCIÓN CSS: DISEÑO Y ESTILOS
+           ========================================= */
+        :root {
+            --primary: #4A90E2;
+            --primary-hover: #357ABD;
+            --secondary: #F39C12;
+            --secondary-hover: #D68910;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --text-main: #333333;
+            --text-muted: #666666;
+            --error: #E74C3C;
+            --border: #DCDDE1;
+            
+            /* Colores de temperatura */
+            --temp-cold: #D6EAF8;
+            --temp-temperate: #FCF3CF;
+            --temp-hot: #FADBD8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 30%, #ff7e5f 70%, #feb47b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .app-container {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 40px 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Botones de ejemplo rápido */
+        .quick-examples {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-example {
+            background: #f1f2f6;
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+        }
+
+        .btn-example:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Controles de entrada y selección */
+        .controls-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-swap {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px; /* Alinear con los inputs, considerando el label */
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .btn-swap:hover {
+            background: var(--secondary-hover);
+            transform: rotate(180deg);
+        }
+
+        /* Botones de acción principal */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-convert {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-convert:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-reset {
+            background: #ecf0f1;
+            color: var(--text-main);
+        }
+
+        .btn-reset:hover {
+            background: #bdc3c7;
+        }
+
+        /* Mensajes de error */
+        .error-message {
+            background: #FDEDEC;
+            color: var(--error);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Sección de resultados y componente educativo */
+        .result-container {
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            display: none;
+            animation: slideUp 0.4s ease;
+            transition: background-color 0.5s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .result-title {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .education-card {
+            background: rgba(255,255,255,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .education-card strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .formula-box {
+            font-family: monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px dashed var(--border);
+            margin: 10px 0;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Clases de temperatura para el fondo del resultado */
+        .bg-cold { background-color: var(--temp-cold); }
+        .bg-temperate { background-color: var(--temp-temperate); }
+        .bg-hot { background-color: var(--temp-hot); }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Diseño Responsivo */
+        @media (max-width: 600px) {
+            .controls-wrapper {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .btn-swap {
+                margin-top: 0;
+                transform: rotate(90deg);
+            }
+            .btn-swap:hover {
+                transform: rotate(270deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         SECCIÓN HTML: ESTRUCTURA DE LA APLICACIÓN
+         ========================================= -->
+    <main class="app-container">
+        <header>
+            <h1>Conversor Educativo</h1>
+            <p class="subtitle">Aprende a convertir Celsius, Fahrenheit y Kelvin</p>
+        </header>
+
+        <section class="quick-examples" aria-label="Ejemplos rápidos">
+            <button class="btn-example" onclick="setExample(0, 'C', 'F')">Punto de congelación (0 °C)</button>
+            <button class="btn-example" onclick="setExample(100, 'C', 'K')">Ebullición del agua (100 °C)</button>
+            <button class="btn-example" onclick="setExample(273.15, 'K', 'C')">Cero grados Celsius en Kelvin</button>
+        </section>
+
+        <section class="controls-wrapper">
+            <div class="input-group">
+                <label for="inputValue">Temperatura a convertir</label>
+                <input type="number" id="inputValue" placeholder="Ej: 25" step="any">
+            </div>
+
+            <div class="input-group">
+                <label for="unitFrom">Unidad origen</label>
+                <select id="unitFrom">
+                    <option value="C">Celsius (°C)</option>
+                    <option value="F">Fahrenheit (°F)</option>
+                    <option value="K">Kelvin (K)</option>
+                </select>
+            </div>
+
+            <button class="btn-swap" id="btnSwap" aria-label="Intercambiar unidades" title="Intercambiar">⇄</button>
+
+            <div class="input-group">
+                <label for="unitTo">Unidad destino</label>
+                <select id="unitTo">
+                    <option value="F" selected>Fahrenheit (°F)</option>
+                    <option value="C">Celsius (°C)</option>
+                    <option value="K">Kelvin (K)</option>
+                </select>
+            </div>
+        </section>
+
+        <div id="errorMsg" class="error-message"></div>
+
+        <section class="action-buttons">
+            <button class="btn btn-reset" id="btnReset">Limpiar</button>
+            <button class="btn btn-convert" id="btnConvert">Convertir</button>
+        </section>
+
+        <!-- Contenedor del resultado y explicación educativa -->
+        <section id="resultContainer" class="result-container">
+            <div class="result-title">Resultado de la conversión:</div>
+            <div class="result-value" id="resultValue">--</div>
+            
+            <div class="education-card">
+                <strong>¿Cómo se calcula?</strong>
+                <p id="educationText"></p>
+                <div class="formula-box" id="formulaBox"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =========================================
+         SECCIÓN JAVASCRIPT: LÓGICA Y FUNCIONES
+         ========================================= -->
+    <script>
+        // Referencias del DOM
+        const inputVal = document.getElementById('inputValue');
+        const unitFrom = document.getElementById('unitFrom');
+        const unitTo = document.getElementById('unitTo');
+        const btnSwap = document.getElementById('btnSwap');
+        const btnConvert = document.getElementById('btnConvert');
+        const btnReset = document.getElementById('btnReset');
+        const errorMsg = document.getElementById('errorMsg');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultValue = document.getElementById('resultValue');
+        const educationText = document.getElementById('educationText');
+        const formulaBox = document.getElementById('formulaBox');
+
+        // Constantes del cero absoluto
+        const ABSOLUTE_ZERO = {
+            C: -273.15,
+            F: -459.67,
+            K: 0
+        };
+
+        // Símbolos para UI
+        const SYMBOLS = { C: '°C', F: '°F', K: 'K' };
+
+        // Objeto con las fórmulas, el cálculo y el texto educativo
+        const conversions = {
+            'C_F': {
+                calc: (c) => (c * 9/5) + 32,
+                formula: '(°C × 9/5) + 32 = °F',
+                text: 'Multiplica los grados Celsius por 9/5 (o 1.8) y luego súmale 32.'
+            },
+            'C_K': {
+                calc: (c) => c + 273.15,
+                formula: '°C + 273.15 = K',
+                text: 'Para pasar de Celsius a Kelvin, simplemente suma 273.15.'
+            },
+            'F_C': {
+                calc: (f) => (f - 32) * 5/9,
+                formula: '(°F - 32) × 5/9 = °C',
+                text: 'Resta 32 a los grados Fahrenheit y luego multiplica el resultado por 5/9.'
+            },
+            'F_K': {
+                calc: (f) => (f - 32) * 5/9 + 273.15,
+                formula: '(°F - 32) × 5/9 + 273.15 = K',
+                text: 'Primero convierte Fahrenheit a Celsius restando 32 y multiplicando por 5/9, luego suma 273.15 para obtener Kelvin.'
+            },
+            'K_C': {
+                calc: (k) => k - 273.15,
+                formula: 'K - 273.15 = °C',
+                text: 'Resta 273.15 a los Kelvin para obtener los grados Celsius.'
+            },
+            'K_F': {
+                calc: (k) => (k - 273.15) * 9/5 + 32,
+                formula: '(K - 273.15) × 9/5 + 32 = °F',
+                text: 'Primero convierte Kelvin a Celsius restando 273.15. Luego multiplica por 9/5 y suma 32 para llegar a Fahrenheit.'
+            }
+        };
+
+        // Función para aplicar valores de ejemplo
+        function setExample(value, from, to) {
+            inputVal.value = value;
+            unitFrom.value = from;
+            unitTo.value = to;
+            processConversion();
+        }
+
+        // Intercambiar unidades
+        btnSwap.addEventListener('click', () => {
+            const temp = unitFrom.value;
+            unitFrom.value = unitTo.value;
+            unitTo.value = temp;
+            if (inputVal.value !== '') processConversion();
+        });
+
+        // Eventos principales
+        btnConvert.addEventListener('click', processConversion);
+        btnReset.addEventListener('click', resetApp);
+        
+        // Convertir al presionar Enter en el input
+        inputVal.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') processConversion();
+        });
+
+        // Mostrar errores
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            resultContainer.style.display = 'none';
+        }
+
+        // Limpiar interfaz
+        function resetApp() {
+            inputVal.value = '';
+            unitFrom.value = 'C';
+            unitTo.value = 'F';
+            errorMsg.style.display = 'none';
+            resultContainer.style.display = 'none';
+            inputVal.focus();
+        }
+
+        // Limpiar clases de color de temperatura
+        function clearTempColors() {
+            resultContainer.classList.remove('bg-cold', 'bg-temperate', 'bg-hot');
+        }
+
+        // Determinar color de fondo visualizando qué tan caliente es
+        function setBackgroundColor(celsiusValue) {
+            clearTempColors();
+            if (celsiusValue < 15) {
+                resultContainer.classList.add('bg-cold');
+            } else if (celsiusValue >= 15 && celsiusValue <= 30) {
+                resultContainer.classList.add('bg-temperate');
+            } else {
+                resultContainer.classList.add('bg-hot');
+            }
+        }
+
+        // Lógica Principal de Conversión
+        function processConversion() {
+            const valStr = inputVal.value;
+            const from = unitFrom.value;
+            const to = unitTo.value;
+
+            // Validación de campo vacío o no numérico
+            if (valStr.trim() === '' || isNaN(valStr)) {
+                showError('Por favor, ingresa un número válido.');
+                return;
+            }
+
+            const val = parseFloat(valStr);
+
+            // Validación del cero absoluto
+            if (val < ABSOLUTE_ZERO[from]) {
+                showError(`La temperatura no puede ser inferior al cero absoluto (${ABSOLUTE_ZERO[from]} ${SYMBOLS[from]}).`);
+                return;
+            }
+
+            // Ocultar error si todo es válido
+            errorMsg.style.display = 'none';
+
+            let result;
+            let currentSetup;
+            let celsiusEquivalent;
+
+            // Si las unidades son iguales
+            if (from === to) {
+                result = val;
+                currentSetup = {
+                    formula: `${val} ${SYMBOLS[from]} = ${val} ${SYMBOLS[to]}`,
+                    text: 'Las unidades de origen y destino son iguales, por lo tanto no hay cambio en el valor.'
+                };
+                // Calcular equivalente en C para el color visual
+                celsiusEquivalent = from === 'C' ? val : (from === 'F' ? conversions['F_C'].calc(val) : conversions['K_C'].calc(val));
+            } else {
+                // Generar la llave (Ej: 'C_F') y obtener las funciones de conversión
+                const conversionKey = `${from}_${to}`;
+                currentSetup = conversions[conversionKey];
+                
+                result = currentSetup.calc(val);
+                
+                // Determinar el equivalente en grados Celsius para ajustar el color visual
+                if (from === 'C') {
+                    celsiusEquivalent = val;
+                } else if (to === 'C') {
+                    celsiusEquivalent = result;
+                } else {
+                    // Si es F -> K o K -> F
+                    celsiusEquivalent = from === 'F' ? conversions['F_C'].calc(val) : conversions['K_C'].calc(val);
+                }
+            }
+
+            // Mostrar el resultado en UI, redondeado a 2 decimales si es necesario
+            const formattedResult = Number.isInteger(result) ? result : result.toFixed(2);
+            const originalValFormatted = Number.isInteger(val) ? val : val.toFixed(2);
+            
+            resultValue.innerHTML = `${originalValFormatted} ${SYMBOLS[from]} = <span style="color: var(--primary)">${formattedResult} ${SYMBOLS[to]}</span>`;
+            
+            // Llenar componente educativo
+            let formulaHtml = currentSetup.formula;
+            // Si hubo conversión, mostrar la fórmula con los números insertados
+            if (from !== to) {
+                formulaHtml += `<br><span style="color:#666; font-size: 0.9em; margin-top:5px; display:inline-block;">Ej: ${currentSetup.formula.replace(from === 'K' ? 'K' : '°'+from, originalValFormatted)}</span>`;
+            }
+            
+            formulaBox.innerHTML = formulaHtml;
+            educationText.textContent = currentSetup.text;
+
+            // Cambiar color y mostrar
+            setBackgroundColor(celsiusEquivalent);
+            resultContainer.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
